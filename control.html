@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control del Domo | PapuDomo</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="PapuDomo.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <video class="video-background" autoplay muted loop playsinline>
+    <source src="ASTRO2.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
+  <nav class="navbar glass">
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+
+      <li class="submenu">
+        <a href="#">Acerca del Proyecto</a>
+        <ul class="dropdown">
+          <li><a href="codigo.html">Códigos</a></li>
+          <li><a href="procedimiento.html">Procedimiento</a></li>
+          <li><a href="materiales.html">Materiales</a></li>
+        </ul>
+      </li>
+
+      <li><a href="control.html">Control del domo</a></li>
+
+      <li style="margin-left:auto; color:#cccccc; font-size:0.95rem;">
+        Usuario: <span id="nombreUsuario" style="color:#ffffff; font-weight:600;">---</span>
+      </li>
+      <li style="margin-left:10px;">
+        <a href="javascript:logout()" style="color:#ffffff; font-weight:bold;">Cerrar sesión</a>
+      </li>
+    </ul>
+  </nav>
+
+  <header class="titulo-container">
+    <h1 class="titulo">CONTROL DEL DOMO Y CÁMARA</h1>
+    <p class="subtitulo">
+      Selecciona un planeta, apunta el domo y visualiza la ESP32-CAM en tiempo real.
+    </p>
+  </header>
+
+  <div class="container">
+    <!-- Panel de control -->
+    <section class="card glass">
+      <h2>Interfaz de control</h2>
+
+      <p><strong>Telescopio actual:</strong> <span id="nombreTelescopio">Cargando...</span></p>
+      <p><strong>Estado sesión / telescopio:</strong> <span id="estadoSesion">Cargando...</span></p>
+<div style="margin-top:16px;">
+  <label for="objetoInput"><strong>Objeto:</strong></label><br>
+
+  <input
+    id="objetoInput"
+    list="sugerenciasObjetos"
+    placeholder="Ej: Luna, Marte, Jupiter, M42, NGC 7000, Sirius..."
+    style="margin-top:6px; padding:8px; border-radius:8px; min-width:260px;
+           font-family:'Times New Roman', Times, serif; color: rgb(255,255,255);
+           background-color: rgb(17, 34, 158); font-size: 15px; border:none;"
+    autocomplete="off"
+  />
+
+  <!-- Sugerencias (NO limita; solo ayuda) -->
+  <datalist id="sugerenciasObjetos">
+    <option value="Mercury"></option>
+    <option value="Venus"></option>
+    <option value="Moon"></option>
+    <option value="Mars"></option>
+    <option value="Jupiter"></option>
+    <option value="Saturn"></option>
+    <option value="Uranus"></option>
+    <option value="Neptune"></option>
+    <option value="Sun"></option>
+    <option value="M31"></option>
+    <option value="M42"></option>
+    <option value="NGC 7000"></option>
+    <option value="Sirius"></option>
+  </datalist>
+
+  <p style="margin-top:8px; color:#cccccc; font-size:0.9rem;">
+    Puedes escribir cualquier objeto. Las sugerencias son opcionales.
+
+  </p>
+  <P  style="margin-top:8px; color:#944b4b; font-size:0.9rem;"> OJO ESPERAR MINIMO 10 SEGUNDOS PARA PODER CAPTURAR LA IMAGEN</P>
+</div>
+
+
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="btnApuntar" style="padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-weight:bold ;font-family: 'Times New Roman', Times, serif;">
+          Apuntar domo al planeta seleccionado
+        </button>
+
+        <button id="btnFinalizar" style="padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-weight:bold; background:#790000; color:rgb(255, 255, 255);font-family: 'Times New Roman', Times, serif;" disabled>
+          Finalizar observación
+        </button>
+      </div>
+
+      <p id="mensajeEstado" style="margin-top:12px; font-style:italic;"></p>
+    </section>
+
+    <!-- Vista de cámara -->
+    <section class="card glass">
+      <h2>Vista de la ESP32-CAM</h2>
+      <p>Imagen actualizada automáticamente mientras dure la observación.</p>
+
+      <div style="margin-top:12px; display:flex; justify-content:center;">
+        <img id="camStream" src="" alt="Stream ESP32-CAM"
+             style="max-width:100%; max-height:65vh; border-radius:18px; border:1px solid rgba(255,255,255,0.25);" />
+      </div>
+    </section>
+  </div>
+
+<section id="historialSection" class="card glass historial-card">
+  <div class="historial-header">
+    <h2 style="margin:0;">Historial de Observaciones</h2>
+    <p style="margin:6px 0 0; color:#d7d7d7; font-size:0.95rem;">
+      Filtra tus observaciones y descarga la imagen asociada cuando esté disponible.
+    </p>
+  </div>
+
+  <div class="historial-filtros">
+    <input id="histBuscar" class="hist-input" placeholder="Buscar astro (ej: Luna)" />
+
+    <select id="histEstado" class="hist-input">
+      <option value="">Todos los estados</option>
+      <option value="finalizada">Finalizada</option>
+      <option value="en curso">En curso</option>
+      <option value="fallida">Fallida</option>
+    </select>
+
+    <div class="hist-fechas">
+      <label class="hist-label">Desde</label>
+      <input id="histDesde" type="date" class="hist-input" />
+    </div>
+
+    <div class="hist-fechas">
+      <label class="hist-label">Hasta</label>
+      <input id="histHasta" type="date" class="hist-input" />
+    </div>
+
+    <button id="btnHistActualizar" class="hist-btn">Actualizar</button>
+  </div>
+
+  <div class="historial-tabla-wrap">
+    <table id="tablaHistorial" class="hist-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Astro</th>
+          <th>Azimut</th>
+          <th>Altitud</th>
+          <th>Estado</th>
+          <th>Foto</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+<span id="estadoEsp">—</span>
+
+
+  <footer class="glass">
+    © 2025 PapuDomo – Control del domo y cámara
+  </footer>
+  <script type="module" src="domo_control.js"></script>
+  <script type="module">
+  async function apiLogout() {
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+  }
+
+  window.logout = async function () {
+    try {
+      await apiLogout();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      localStorage.removeItem("papudomo_user");
+      window.location.href = "registro.html";
+    }
+  };
+</script>
+
+</body>
+</html>

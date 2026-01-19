@@ -1,0 +1,371 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+}
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: -1;
+}
+
+
+.navbar {
+    width: 100%;
+    padding: 15px 30px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    font-family: "Times New Roman", sans-serif;
+}
+.page-title{  text-align: center;
+    margin-top: 100px;
+    color: white;
+    animation: fadeIn 1.8s ease-in-out;}
+.intro{color: aliceblue;}
+.code-block{color: #fff;}
+.navbar ul {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+    justify-content: center;
+}
+
+.navbar ul li a {
+    color: #fff;
+    font-size: 18px;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+
+.navbar ul li a:hover {
+    color: #00f2ff;
+    text-shadow: 0 0 10px #00f2ff;
+}
+
+/* Dropdown */
+.submenu ul {
+    display: none;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.submenu:hover ul {
+    display: block;
+}
+
+.submenu ul li {
+    margin: 10px 0;
+}
+
+/* --- GLASSMORPHISM --- */
+.glass {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    font-family: "Times New Roman", sans-serif;
+}
+
+/* --- TITULO ANIMADO --- */
+.titulo-container {
+    text-align: center;
+    margin-top: 140px;
+    color: white;
+    animation: fadeIn 1.8s ease-in-out;
+}
+
+.titulo {
+    font-family: "Times New Roman", sans-serif;
+    font-size: 42px;
+    text-shadow: 0 0 20px #0a0d10;
+}
+
+.subtitulo {
+    font-family: "Times New Roman", sans-serif;
+    font-size: 18px;
+    opacity: 0.8;
+    margin-top: 10px;
+}
+
+/* --- CONTENIDO --- */
+.container {
+    width: 85%;
+    margin: 50px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+}
+
+.card {
+    padding: 30px;
+    color: white;
+    border-radius: 20px;
+    animation: fadeInUp 1.5s ease;
+    font-family: "Times New Roman", sans-serif;
+}
+
+.card h2 {
+    font-family: "Times New Roman", sans-serif;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+/* --- GALERÍA --- */
+.galeria {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.galeria img {
+    width: 30%;
+    border-radius: 15px;
+    transition: transform 0.4s;
+}
+
+.galeria img:hover {
+    transform: scale(1.08);
+}
+
+/* --- FOOTER --- */
+footer {
+    text-align: center;
+    padding: 15px;
+    margin-top: 30px;
+    color: white;
+    font-family: "Roboto", sans-serif;
+}
+
+/* --- ANIMACIONES --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================
+   MODAL TURNO FIFO - FIX
+========================= */
+#turnoModal{
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.60) !important;
+  backdrop-filter: blur(6px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+}
+
+#turnoModal.hidden{
+  display: none !important;
+}
+
+#turnoModal .turno-box{
+  width: min(92vw, 520px) !important;
+  padding: 35px 30px !important;
+  text-align: center !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  background: rgba(15, 15, 25, 0.084) !important;
+  box-shadow: 0 0 35px rgba(0,0,0,0.7) !important;
+}
+
+#turnoModal h2{
+  font-family: 'Times New Roman', Times, serif, sans-serif !important;
+  letter-spacing: 1px !important;
+  font-size: 2.2rem !important;
+  margin-bottom: 12px !important;
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(0, 179, 255, 0.7) !important;
+}
+
+#turnoModal p{
+  font-family: 'Times New Roman', Times, serif, sans-serif !important;
+  font-size: 1.2rem !important;
+  color: #ffdbdb !important;
+  margin-bottom: 22px !important;
+  line-height: 1.5 !important;
+}
+
+#turnoModal .turno-btn{
+  padding: 12px 26px !important;
+  font-size: 1.1rem !important;
+  font-weight: bold !important;
+  border: none !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  background: rgba(255,255,255,0.92) !important;
+  color: #111 !important;
+  transition: .2s ease !important;
+}
+
+#turnoModal .turno-btn:hover{
+  transform: translateY(-2px) !important;
+  box-shadow: 0 0 16px rgba(0, 255, 255, 0.35) !important;
+}
+#password{
+    color: rgb(0, 136, 255);
+}
+/* =========================
+   HISTORIAL (UI)
+   ========================= */
+
+.historial-card{
+  margin: 18px auto 0;
+  width: min(1100px, 92vw);
+}
+
+.historial-header{
+  margin-bottom: 14px;
+}
+
+.historial-filtros{
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.9fr 0.9fr auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 900px){
+  .historial-filtros{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hist-fechas{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hist-label{
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.78);
+}
+
+.hist-input{
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(10, 10, 20, 0.55);
+  color: #ffffff;
+  outline: none;
+  font-family: "Roboto", sans-serif;
+}
+
+.hist-input::placeholder{
+  color: rgba(255,255,255,0.55);
+}
+
+.hist-input:focus{
+  border-color: rgba(255,255,255,0.38);
+  box-shadow: 0 0 0 3px rgba(36, 4, 216, 0.18);
+}
+
+.hist-btn{
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(36, 4, 216, 0.55);
+  transition: transform 0.05s ease, filter 0.15s ease;
+  font-family: "Roboto", sans-serif;
+}
+
+.hist-btn:hover{
+  filter: brightness(1.12);
+}
+
+.hist-btn:active{
+  transform: translateY(1px);
+}
+
+.historial-tabla-wrap{
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+}
+
+.hist-table{
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-family: "Roboto", sans-serif;
+}
+
+.hist-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  padding: 12px 12px;
+  background: rgba(20, 20, 35, 0.88);
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.hist-table tbody td{
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
+}
+
+.hist-table tbody tr:nth-child(even){
+  background: rgba(255,255,255,0.03);
+}
+
+.hist-table tbody tr:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+.hist-pill{
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+}
+
+.hist-link{
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(36, 4, 216, 0.55);
+}
+
+.hist-link:hover{
+  filter: brightness(1.12);
+}
+.badge { padding: 3px 8px; border-radius: 10px; font-size: 12px; }
+.badge-error { background: #ffd6d6; color: #7a0000; font-weight: 600; }

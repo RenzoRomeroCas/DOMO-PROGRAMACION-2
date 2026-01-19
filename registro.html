@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso | PapuDomo</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="PapuDomo.css">
+
+
+  <style>
+    .video-background { position: fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-2; }
+    .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.45); z-index:-1; }
+    #authScreen {
+      position:absolute; top:50%; left:50%; transform: translate(-50%, -50%);
+      width:95%; max-width:520px;
+      background: rgba(10,10,15,0.32);
+      backdrop-filter: blur(18px);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:30px;
+      padding:50px 35px;
+      display:flex; flex-direction:column; align-items:center; gap:18px;
+    }
+    .title {
+      font-family: Orbitron, sans-serif;
+      font-size: 4.6rem;
+      color:#fff;
+      font-weight:900;
+      text-align:center;
+      letter-spacing:4px;
+      text-shadow:0 0 15px rgba(0,150,255,0.7);
+      margin-bottom:5px;
+    }
+    .subtitle {
+      font-family:'Times New Roman', Times, serif, sans-serif;
+      color:#fff;
+      font-size:1.5rem;
+      text-align:center;
+      margin-bottom:16px;
+    }
+    #authScreen input {
+      width:90%; max-width:420px;
+      padding:20px 25px;
+      border-radius:50px;
+      border:2px solid rgba(255,255,255,0.25);
+      background: rgba(25,25,40,0.55);
+      color:#eee;
+      font-size:1.3rem;
+      text-align:center;
+      transition:.35s ease;
+      outline:none;
+      font-family:'Times New Roman', Times, serif, sans-serif;
+    }
+    #authScreen input:hover { box-shadow:0 0 15px rgba(0,255,255,0.35); }
+    .btnRow{ display:flex; gap:12px; margin-top:6px; flex-wrap:wrap; justify-content:center; }
+    .btnMain {
+      padding:16px 40px;
+      font-size:1.35rem;
+      font-weight:bold;
+      background: rgba(20,20,30,0.85);
+      color:white;
+      border:2px solid rgba(255,255,255,0.3);
+      border-radius:50px;
+      cursor:pointer;
+      box-shadow:0 10px 25px rgba(0,0,0,0.45);
+      transition:.35s ease;
+      min-width:180px;
+      font-family:'Times New Roman', Times, serif, sans-serif;
+    }
+    .btnMain:hover { transform: translateY(-2px); box-shadow:0 0 18px rgba(0,255,255,0.4); }
+    #msg {
+      margin-top:6px;
+      font-family: Roboto, sans-serif;
+      font-size:1.05rem;
+      color:#ffb4b4;
+      text-align:center;
+      min-height:22px;
+    }
+    @media(max-width:480px){
+      .title{font-size:3.5rem;}
+      .subtitle{font-size:1.2rem;}
+    }
+    #creditos{ font-family:'Times New Roman', Times, serif, sans-serif; color: rgba(4, 3, 43, 0.753); }
+  </style>
+</head>
+
+<body>
+  <video class="video-background" autoplay muted loop playsinline>
+    <source src="ASTRO1.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
+
+  <div id="authScreen">
+    <h1 class="title">DOMO</h1>
+    <p class="subtitle">Sistema de Teleoperación</p>
+
+    <input type="email" id="email" placeholder="Correo electrónico" autocomplete="off">
+    <input type="password" id="password" placeholder="Contraseña" autocomplete="new-password">
+
+    <div class="btnRow">
+      <button class="btnMain" onclick="login()">Entrar al domo</button>
+      <button class="btnMain" onclick="register()">Registrar</button>
+    </div>
+
+    <div id="msg"></div>
+    <p id="creditos">BY-LAS PAPUSALIDAS</p>
+  </div>
+
+  <script>
+  function setMsg(text, ok=false){
+    const el = document.getElementById("msg");
+    el.style.color = ok ? "#a7ffcf" : "#ffb4b4";
+    el.textContent = text || "";
+  }
+
+  window.register = async function () {
+    const email = document.getElementById("email").value.trim();
+    const pass  = document.getElementById("password").value;
+
+    if (!email || !pass){
+      setMsg("Completa todos los campos.");
+      return;
+    }
+
+    setMsg("Registrando...");
+
+    try {
+      const r = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ email, password: pass })
+      });
+
+      const out = await r.json();
+
+      if (!out.ok){
+        setMsg(out.error || "No se pudo registrar.");
+        return;
+      }
+
+      setMsg(out.msg || "Cuenta creada. Ahora puedes ingresar.", true);
+
+    } catch (e) {
+      console.error(e);
+      setMsg("Error de conexión con el servidor.");
+    }
+  };
+
+  // ✅ Login: manda correo/contraseña a Flask
+  window.login = async function () {
+    const email = document.getElementById("email").value.trim();
+    const pass  = document.getElementById("password").value;
+
+    if (!email || !pass){
+      setMsg("Completa todos los campos.");
+      return;
+    }
+
+    setMsg("Ingresando...");
+
+    try {
+      const r = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ email, password: pass })
+      });
+
+      const out = await r.json();
+
+      if (!out.ok){
+        setMsg(out.error || "Correo o contraseña incorrectos.");
+        return;
+      }
+
+      // Guardamos el email (dashboard.js lo usa)
+      localStorage.setItem("papudomo_user", JSON.stringify({ email }));
+
+      window.location.href = "index.html";
+
+    } catch (e) {
+      console.error(e);
+      setMsg("Error de conexión con el servidor.");
+    }
+  };
+  try {
+    if (localStorage.getItem("papudomo_user")) {
+      window.location.href = "index.html";
+    }
+  } catch (e) {}
+</script>

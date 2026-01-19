@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PapuDomo - Procedimiento del Proyecto</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="PapuDomo.css">
+</head>
+
+<body>
+
+    <!-- VIDEO DE FONDO -->
+    <video class="video-background" autoplay muted loop playsinline>
+        <source src="ASTRO.mp4" type="video/mp4">
+        Tu navegador no soporta video.
+    </video>
+
+    <!-- CAPA OSCURA -->
+    <div class="overlay"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass">
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+
+            <li class="submenu">
+                <a href="#">Acerca del Proyecto</a>
+                <ul class="dropdown">
+                    <li><a href="codigo.html">Códigos</a></li>
+                    <li><a href="procedimiento.html">Procedimiento</a></li>
+                    <li><a href="materiales.html">Materiales</a></li>
+                </ul>
+            </li>
+            <li><a href="control.html">Control del domo</a></li>
+
+            <li style="margin-left:auto; color:#cccccc; font-size:0.95rem;">
+                Usuario: <span id="nombreUsuario" style="color:#ffffff; font-weight:600;">---</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- TÍTULO PRINCIPAL -->
+    <header class="titulo-container">
+        <h1 class="titulo">PROCEDIMIENTO DEL PROYECTO PAPUDOMO</h1>
+        <p class="subtitulo">
+            Flujo general para el uso del domo astronómico y teleoperación del telescopio.
+        </p>
+    </header>
+
+    <!-- CONTENIDO -->
+    <div class="container">
+
+        <section class="card glass">
+            <h2>1. Registro e inicio de sesión</h2>
+            <p>
+                El usuario se registra mediante correo y contraseña. Al confirmar registro, el sistema
+                genera automáticamente su perfil en la base de datos y permite el ingreso al panel principal.
+            </p>
+        </section>
+
+        <section class="card glass">
+            <h2>2. Selección del telescopio</h2>
+            <p>
+                En la página de inicio se listan los telescopios disponibles.
+                El usuario puede solicitar acceso a uno de ellos según su estado.
+            </p>
+        </section>
+
+        <section class="card glass">
+            <h2>3. Lógica de sesión y cola FIFO</h2>
+            <ul>
+                <li>Si no hay usuarios esperando, la sesión activa es ilimitada.</li>
+                <li>Si ingresa otro usuario a la cola, la sesión actual pasa a modo limitado.</li>
+                <li>La prioridad se gestiona bajo la regla FIFO (First In First Out).</li>
+            </ul>
+        </section>
+
+        <section class="card glass">
+            <h2>4. Control del telescopio</h2>
+            <p>
+                El telescopio se mueve por azimut y altitud mediante servomotores controlados por ESP32.
+                La interfaz web envía comandos y se visualiza la orientación mediante la ESP32-CAM.
+            </p>
+        </section>
+
+        <section class="card glass">
+            <h2>5. Observaciones astronómicas</h2>
+            <p>
+                Stellarium provee las coordenadas (azimut/altitud) y el objeto celeste seleccionado.
+                Cada observación queda registrada en la tabla <strong>observacion</strong>.
+            </p>
+        </section>
+
+        <section class="card glass">
+            <h2>6. Fin de sesión</h2>
+            <p>
+                Cuando termina el tiempo asignado o el usuario finaliza manualmente,
+                la sesión se cierra y el siguiente usuario en cola toma el control automáticamente.
+            </p>
+        </section>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="glass">
+        © 2025 - Proyecto Domo Telescopio Automatizado con ESP32
+    </footer>
+
+    <!-- SCRIPT USUARIO (solo para mostrar nombre en minúsculas) -->
+    <script>
+        const data = localStorage.getItem("papudomo_user");
+        if (data) {
+            const { email } = JSON.parse(data);
+            document.getElementById("nombreUsuario").textContent =
+                email.split("@")[0].toLowerCase();
+        }
+    </script>
+
+</body>
+</html>

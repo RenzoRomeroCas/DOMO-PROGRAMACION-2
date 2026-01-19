@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Códigos | PapuDomo</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="PapuDomo.css">
+
+    <!-- Prism.js para resaltar sintaxis -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+
+<body>
+
+    <!-- VIDEO DE FONDO -->
+    <video class="video-background" autoplay muted loop playsinline>
+        <source src="ASTRO.mp4" type="video/mp4">
+    </video>
+
+    <!-- CAPA OSCURA -->
+    <div class="overlay"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass">
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+
+            <li class="submenu">
+                <a href="#">Acerca del Proyecto</a>
+                <ul class="dropdown">
+                    <li><a href="codigo.html">Códigos</a></li>
+                    <li><a href="procedimiento.html">Procedimiento</a></li>
+                    <li><a href="materiales.html">Materiales</a></li>
+                </ul>
+            </li>
+             <li><a href="control.html">Control del domo</a></li>
+
+            <li style="margin-left:auto; color:#cccccc; font-size:0.95rem;">
+                Usuario: <span id="nombreUsuario" style="color:#ffffff; font-weight:600;">---</span>
+            </li>
+            <li style="margin-left:10px;">
+                <a href="javascript:logout()" style="color:#ffffff; font-weight:bold;">Cerrar sesión</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <div class="container codigo-page">
+
+        <h1 class="page-title">Códigos del Proyecto PapuDomo</h1>
+        <p class="intro">
+            A continuación se muestran los códigos utilizados para la ESP32-CAM y el controlador ESP32 principal.
+        </p>
+
+        <!-- ========= ESP32-CAM ========= -->
+        <section class="card glass code-block">
+            <h2>ESP32-CAM</h2>
+
+            <pre><code class="language-cpp">
+// ESP32-CAM Code
+#include "esp_camera.h"
+#include "WiFi.h"
+#include "WebServer.h"
+
+const char* ssid = "motog15";
+const char* password = "11111111";
+
+WebServer server(80);
+camera_fb_t* lastPhoto = nullptr;
+
+#define PWDN_GPIO_NUM     32
+#define RESET_GPIO_NUM    -1
+#define XCLK_GPIO_NUM      0
+#define SIOD_GPIO_NUM     26
+#define SIOC_GPIO_NUM     27
+#define Y9_GPIO_NUM       35
+#define Y8_GPIO_NUM       34
+#define Y7_GPIO_NUM       39
+#define Y6_GPIO_NUM       36
+#define Y5_GPIO_NUM       21
+#define Y4_GPIO_NUM       19
+#define Y3_GPIO_NUM       18
+#define Y2_GPIO_NUM        5
+#define VSYNC_GPIO_NUM    25
+#define HREF_GPIO_NUM     23
+#define PCLK_GPIO_NUM     22
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  camera_config_t config;
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sccb_sda = SIOD_GPIO_NUM;
+  config.pin_sccb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = 20000000;
+  config.pixel_format = PIXFORMAT_JPEG;
+  config.frame_size = FRAMESIZE_SVGA;
+  config.jpeg_quality = 10;
+  config.fb_count = 1;
+
+  if (esp_camera_init(&config) != ESP_OK) {
+    Serial.println("Error iniciando cámara");
+    return;
+  }
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  server.on("/", HTTP_GET, []() {
+    String html = "<h1>ESP32-CAM</h1>";
+    html += "<p><a href='/disparar'>Tomar foto</a></p>";
+    if (lastPhoto) html += "<img src='/photo.jpg'>";
+    server.send(200, "text/html", html);
+  });
+
+  server.on("/photo.jpg", HTTP_GET, []() {
+    if (!lastPhoto) {
+      server.send(404, "text/plain", "No hay foto");
+      return;
+    }
+    WiFiClient client = server.client();
+    server.sendHeader("Content-Type", "image/jpeg");
+    server.sendHeader("Content-Length", String(lastPhoto->len));
+    client.write(lastPhoto->buf, lastPhoto->len);
+  });
+
+  server.on("/disparar", HTTP_GET, []() {
+    if (lastPhoto) esp_camera_fb_return(lastPhoto);
+    lastPhoto = esp_camera_fb_get();
+    if (!lastPhoto) {
+      server.send(500, "text/plain", "Error al capturar");
+      return;
+    }
+    server.send(200, "text/plain", "Foto tomada OK");
+  });
+
+  server.begin();
+}
+void loop() { server.handleClient(); }
+            </code></pre>
+        </section>
+
+        <!-- ========= ESP32 CONTROLADOR ========= -->
+        <section class="card glass code-block">
+            <h2>ESP32 Controlador</h2>
+
+            <pre><code class="language-cpp">
+// ESP32 Controller Code
+#include "WiFi.h"
+#include "HTTPClient.h"
+#include "ArduinoJson.h"
+#include "ESP32Servo.h"
+
+const char* ssid = "motog15";
+const char* password = "11111111";
+
+String stellariumIP = "10.224.249.159";
+int stellariumPort = 8090;
+
+String camIP = "10.224.249.214";
+
+Servo servoAzimut;
+Servo servoAltitud;
+
+int pinAzimut = 18;
+int pinAltitud = 5;
+
+bool tomarFoto() {
+  HTTPClient http;
+  String url = "http://" + camIP + "/disparar";
+  http.begin(url);
+  int code = http.GET();
+  if (code <= 0) return false;
+  http.end();
+  return true;
+}
+
+void moverSuave(Servo &servo, int objetivo, int velocidad = 5) {
+  int actual = servo.read();
+  if (actual < objetivo)
+    for (int i = actual; i <= objetivo; i++) { servo.write(i); delay(velocidad); }
+  else
+    for (int i = actual; i >= objetivo; i--) { servo.write(i); delay(velocidad); }
+}
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) delay(500);
+
+  servoAzimut.attach(pinAzimut, 500, 2500);
+  servoAltitud.attach(pinAltitud, 500, 2500);
+  servoAzimut.write(0);
+  servoAltitud.write(0);
+}
+
+void loop() {
+  if (Serial.available()) {
+    String objeto = Serial.readStringUntil('\n');
+    objeto.trim();
+    if (objeto.equalsIgnoreCase("centrar")) {
+      moverSuave(servoAzimut, 0);
+      moverSuave(servoAltitud, 0);
+      tomarFoto();
+      return;
+    }
+  }
+}
+            </code></pre>
+        </section>
+
+    </div>
+
+    <footer class="glass">
+        © 2025 PapuDomo – Sistema de Teleoperación de Telescopio
+    </footer>
+
+    <!-- SCRIPT USUARIO -->
+    <script>
+        const data = localStorage.getItem("papudomo_user");
+        if (data) {
+            const { email } = JSON.parse(data);
+            document.getElementById("nombreUsuario").textContent =
+                email.split("@")[0].toLowerCase();
+        }
+        function logout(){
+            localStorage.removeItem("papudomo_user");
+            window.location.href = "registro.html";
+        }
+    </script>
+
+</body>
+</html>

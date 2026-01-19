@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PapuDomo - Sistema de Teleoperación de un Telescopio</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="PapuDomo.css">
+</head>
+<body>
+
+    <video class="video-background" autoplay muted loop playsinline>
+        <source src="ASTRO2.mp4" type="video/mp4">
+        Tu navegador no soporta video.
+    </video>
+    <div class="overlay"></div>
+
+    <nav class="navbar glass">
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li class="submenu">
+                <a href="#">Acerca del Proyecto</a>
+                <ul class="dropdown">
+                    <li><a href="codigo.html">Códigos</a></li>
+                    <li><a href="procedimiento.html">Procedimiento</a></li>
+                    <li><a href="materiales.html">Materiales</a></li>
+                </ul>
+            </li>
+            <li><a href="control.html">Control del domo</a></li>
+
+
+            <li style="margin-left:auto; color:#cccccc; font-size:0.95rem;">
+                Usuario: <span id="nombreUsuario" style="color:#ffffff; font-weight:600;">---</span>
+            </li>
+
+            <li style="margin-left:10px;">
+                <a href="javascript:logout()" style="color:#ffffff; font-weight:bold;">Cerrar sesión</a>
+            </li>
+        </ul>
+    </nav>
+
+    <header class="titulo-container">
+        <h1 class="titulo">SISTEMA DE TELEOPERACIÓN DE UN TELESCOPIO</h1>
+       
+    </header>
+
+    <div class="container">
+        <section class="card glass">
+            <h2>Telescopios disponibles</h2>
+            <div id="listaTelescopios"></div>
+        </section>
+
+        <section class="card glass">
+            <h2>Mis sesiones</h2>
+            <div id="misSesiones"></div>
+        </section>
+    </div>
+
+    <footer class="glass">
+        © 2025 - Proyecto Domo Telescopio Automatizado con ESP32
+    </footer>
+    <script type="module" src="dashboard.js"></script>
+
+<script type="module">
+  import {
+    obtenerUsuario,
+    borrarDeColaUsuario,
+    finalizarSesionUsuario
+  } from "./api.js";
+
+  async function apiLogout() {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch (e) {}
+  }
+  window.logout = async function () {
+    try {
+      // 1) obtener usuario por sesión Flask
+      const { data: perfil } = await obtenerUsuario();
+
+      // Si no hay sesión, igual limpiamos local y salimos
+      if (!perfil || !perfil.id_usuario) {
+        await apiLogout();
+        localStorage.removeItem("papudomo_user");
+        window.location.href = "registro.html";
+        return;
+      }
+
+      const id_usuario = perfil.id_usuario;
+
+      // 2) Borrar de la cola FIFO si estaba esperando
+      await borrarDeColaUsuario(id_usuario);
+
+      // 3) Finalizar cualquier sesión activa del usuario
+      await finalizarSesionUsuario(id_usuario);
+
+      // 4) Cerrar sesión backend + limpiar localStorage
+      await apiLogout();
+      localStorage.removeItem("papudomo_user");
+
+      // 5) Redirigir
+      window.location.href = "registro.html";
+
+    } catch (e) {
+      console.error("LOGOUT ERROR:", e);
+      await apiLogout();
+      localStorage.removeItem("papudomo_user");
+      window.location.href = "registro.html";
+    }
+  };
+</script>
+
+<!-- =========================
+     MODAL TURNO ASIGNADO (FIFO)
+========================= -->
+<div id="turnoModal" class="turno-modal hidden">
+  <div class="turno-box glass">
+    <h2>Es tu turno</h2>
+    <p>
+      Ahora tienes acceso al telescopio.<br>
+      Tienes <b id="turnoTiempo">10 minutos</b> para usar el domo.
+    </p>
+    <button id="btnTurnoOk" class="turno-btn">Entendido</button>
+  </div>
+</div>
+
+</body>
+</html>
